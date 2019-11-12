@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -41,23 +42,33 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "fab onClick: starts")
             val projection = arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
 
-            val cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI,
-                projection,
-                null,
-                null,
-                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+            if (!readGranted) {
+                Snackbar.make(view, "Do not have permission to read contacts", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            } else {
 
-            val contacts = ArrayList<String>()  // create a list to hold our contacts
-            cursor?.use {// loop through the cursor
-                while (it.moveToNext()) {
-                    contacts.add(it.getString(it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)))
+                val cursor = contentResolver.query(
+                    ContactsContract.Contacts.CONTENT_URI,
+                    projection,
+                    null,
+                    null,
+                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
+                )
+
+                val contacts = ArrayList<String>()  // create a list to hold our contacts
+                cursor?.use {
+                    // loop through the cursor
+                    while (it.moveToNext()) {
+                        contacts.add(it.getString(it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)))
+                    }
                 }
+
+                val adapter =
+                    ArrayAdapter<String>(this, R.layout.contact_detail, R.id.name, contacts)
+                contact_names.adapter = adapter
+
+                Log.d(TAG, "fab onClick: ends")
             }
-
-            val adapter = ArrayAdapter<String>(this, R.layout.contact_detail, R.id.name, contacts)
-            contact_names.adapter = adapter
-
-            Log.d(TAG, "fab onClick: ends")
         }
         Log.d(TAG, ".onCreate: ends")
     }
@@ -80,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                     false
                 }
 
-                fab.isEnabled = readGranted
+//                fab.isEnabled = readGranted
             }
         }
         Log.d(TAG, ".onRequestPermissionsResult: ends")
