@@ -42,11 +42,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "fab onClick: starts")
             val projection = arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
 
-            if (!readGranted) {
-                Snackbar.make(view, "Do not have permission to read contacts", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-            } else {
-
+            if (readGranted) {
                 val cursor = contentResolver.query(
                     ContactsContract.Contacts.CONTENT_URI,
                     projection,
@@ -66,9 +62,11 @@ class MainActivity : AppCompatActivity() {
                 val adapter =
                     ArrayAdapter<String>(this, R.layout.contact_detail, R.id.name, contacts)
                 contact_names.adapter = adapter
-
-                Log.d(TAG, "fab onClick: ends")
+            } else {
+                Snackbar.make(view, "Please grant access to your Contacts", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
             }
+            Log.d(TAG, "fab onClick: ends")
         }
         Log.d(TAG, ".onCreate: ends")
     }
